@@ -99,6 +99,7 @@ class JpaMain {
             }
 */
 
+
 /* Join절
             Team team = new Team();
             team.setName("teamA");
@@ -125,6 +126,8 @@ class JpaMain {
                     .getResultList();
 */
 
+
+/* enum 타입
             Member member = new Member();
             member.setUsername("member");
             member.setAge(10);
@@ -146,6 +149,82 @@ class JpaMain {
             System.out.println("username = " + obj[0]);
             System.out.println("HELLO = " + obj[1]);
             System.out.println("true = " + obj[2]);
+*/
+
+
+/*
+            Member member = new Member();
+            member.setUsername("관리자");
+            member.setAge(10);
+
+            em.persist(member);
+
+            em.flush();
+            em.clear();
+
+            // CASE 식
+            String query1 = "select " +
+                            " case when m.age <= 10 then '학생요금' " +
+                            "      when m.age >= 60 then '경로요금' " +
+                            "      else '일반요금' " +
+                            " end " +
+                            "from Member m";
+
+            // coalesce
+            String query2 = "select coalesce(m.username, '이름 없는 회원') from Member m ";
+
+            String query3 = "select nullif(m.username, '관리자') as username " +
+                            "from Member m";
+
+            List<String> result = em.createQuery(query3, String.class)
+                    .getResultList();
+
+            for (String s : result) {
+                System.out.println("s = " + s);
+            }
+*/
+
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            em.persist(member1);
+            
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            em.persist(member2);
+
+            em.flush();
+            em.clear();
+
+            // concat
+            String query1 = "select 'a' || 'b' from Member m";
+
+            // substring
+            String query2 = "select substring(m.username, 2, 3) from Member m";
+
+            // locate
+            String query3 = "select locate('de', 'abcdefg') from Member m";
+
+            // size
+            String query4 = "select size(t.members) from Team t";   // 컬렉션의 크기 반환
+
+            // 사용자 정의 함수 (dialect 상속 클래스 정의, persistence.xml에 상속받은 방언 등록, 사용)
+            String query5 = "select function('group_concat', m.username) from Member m";
+
+
+           List<String> result5 = em.createQuery(query5, String.class)
+                    .getResultList();
+
+            List<Integer> result2 = em.createQuery(query3, Integer.class)
+                    .getResultList();
+
+            for (String s : result5) {
+                System.out.println("s = " + s);
+            }
+
+            for (Integer i : result2) {
+                System.out.println("i = " + i);
+            }
+
 
             tx.commit();
 
