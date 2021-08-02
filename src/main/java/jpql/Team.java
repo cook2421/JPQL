@@ -1,5 +1,7 @@
 package jpql;
 
+import org.hibernate.annotations.BatchSize;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -14,9 +16,9 @@ public class Team {
     private Long id;
     private String name;
 
+    @BatchSize(size = 100)  // 컬렉션은 페치 조인이 안되므로, BatchSize로 해결 (글로벌 세팅으로 가면 편함)
     @OneToMany(mappedBy = "team")
     private List<Member> members = new ArrayList<>();
-
 
 
     public Long getId() {

@@ -184,6 +184,8 @@ class JpaMain {
             }
 */
 
+/*
+
             Member member1 = new Member();
             member1.setUsername("관리자1");
             em.persist(member1);
@@ -223,6 +225,96 @@ class JpaMain {
 
             for (Integer i : result2) {
                 System.out.println("i = " + i);
+            }
+*/
+
+
+/* 경로표현식 (묵시적 조인은 실무에서 X)
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            em.persist(member2);
+
+            em.flush();
+            em.clear();
+
+            // 상태 필드(state field)
+            String query1 = "select m.username from Member m";
+
+            // 단일 값 연관 경로 (묵시적 내부 조인(inner join) 발생, 탐색O) - 실무에서는 사용 지양
+            String query2 = "select m.team.name from Member m";
+
+            // 컬렉션 값 연관 경로 (묵시적 내부 조인(inner join) 발생, 탐색X) - 실무에서는 사용 지양
+            String query3 = "select t.members from team t";
+
+
+            List<String> result = em.createQuery(query2, String.class)
+                    .getResultList();
+
+            for (String s : result) {
+                System.out.println("s = " + s);
+            }
+*/
+
+            Team teamA = new Team();
+            teamA.setName("팀A");
+            em.persist(teamA);
+
+            Team teamB = new Team();
+            teamB.setName("팀B");
+            em.persist(teamB);
+
+            Member member1 = new Member();
+            member1.setUsername("회원1");
+            member1.setTeam(teamA);
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("회원2");
+            member2.setTeam(teamA);
+            em.persist(member2);
+
+            Member member3 = new Member();
+            member3.setUsername("회원3");
+            member3.setTeam(teamB);
+            em.persist(member3);
+
+            em.flush();
+            em.clear();
+
+            // 페치 조인
+            String query1 = "select m from Member m join fetch m.team";
+            String query2 = "select t from Team t join fetch t.members";    // member 수만큼 t의 결과 row수가 결정됨
+            String query2_1 = "select t from Team t join t.members";        // 일반 join의 경우 select절에 있는 t 엔티티만 가져옴
+            String query3 = "select distinct t from Team t join fetch t.members";    // jpql의 distinct는 sql뿐 아니라 엔티티의 중복도 제거해 줌
+
+            // 페치 조인의 한계
+            String query4 = "select t from Team t join fetch t.members as m";                // 페치 조인 대상 엔티티는 별칭 X
+            String query5 = "select t from Team t join fetch t.members join fetch t.orders"; // 둘 이상의 컬렉션은 페치 조인 X
+            String query6 = "select t from Team t"; // 페이징 못 함. BatchSize 세팅으로 해결.
+            // team 한 번 가져오고 batch size만큼 team_id 파라미터 세팅해서 in절로 member 한 방 쿼리해 옴.
+
+            List<Team> result = em.createQuery(query3, Team.class)
+                    .getResultList();
+
+            List<Team> result2 = em.createQuery(query6, Team.class)
+                    .setFirstResult(0)
+                    .setMaxResults(2)
+                    .getResultList();
+
+            for (Team team : result) {
+                System.out.println("member = " + team.getMembers().size() + ", team = " + team.getName());
+            }
+
+            for (Team team : result2) {
+                System.out.println("team = " + team.getName() + "|members=" + team.getMembers().size());
+                for (Member member : team.getMembers()) {
+                    System.out.println("-> member = " + member);
+                }
+
             }
 
 
