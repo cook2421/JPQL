@@ -259,6 +259,8 @@ class JpaMain {
             }
 */
 
+/* 페치 조인
+
             Team teamA = new Team();
             teamA.setName("팀A");
             em.persist(teamA);
@@ -314,8 +316,62 @@ class JpaMain {
                 for (Member member : team.getMembers()) {
                     System.out.println("-> member = " + member);
                 }
-
             }
+*/
+
+            Team teamA = new Team();
+            teamA.setName("팀A");
+            em.persist(teamA);
+
+            Team teamB = new Team();
+            teamB.setName("팀B");
+            em.persist(teamB);
+
+            Member member1 = new Member();
+            member1.setUsername("회원1");
+            member1.setTeam(teamA);
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("회원2");
+            member2.setTeam(teamA);
+            em.persist(member2);
+
+            Member member3 = new Member();
+            member3.setUsername("회원3");
+            member3.setTeam(teamB);
+            em.persist(member3);
+
+            em.flush();
+            em.clear();
+
+            // named 쿼리
+            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", "회원1")
+                    .getResultList();
+
+            for (Member member : resultList) {
+                System.out.println("member = " + member);
+            }
+
+
+            // 벌크 연산
+           int resultCount = em.createQuery("update Member m set m.age = 20")
+                    .executeUpdate(); // 자동 flush
+
+            System.out.println("resultCount = " + resultCount);
+            // 주의사항
+            // 벌크 연산은 영속성 컨텐스트를 무시하고 DB에 직접 쿼리
+            // 방법1: 벌크 연산을 먼저 실행
+            // 방법2: 벌크 연산 후 영속성 컨텍스트 초기화
+
+            System.out.println("member1.getAge() = " + member1.getAge());
+            System.out.println("member2.getAge() = " + member2.getAge());
+            System.out.println("member3.getAge() = " + member3.getAge());
+            // 영속성 컨텍스트에 있는 값이 그대로 나오기 때문에 나이가 0으로 나옴
+            // 그런데, 다시 member를 조회해도 안 됨.
+            // 왜냐하면 처음 persist할 때 pk값이 1차 캐시에 들어갔기 때문에 DB만 반영된 update 내역을 영속성 컨텍스트는 모름.
+            // 따라서 초기화 후 다시 조회해와야 함.
 
 
             tx.commit();
